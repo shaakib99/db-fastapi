@@ -57,5 +57,5 @@ class MySQLDatabase(DatabaseABC):
         self.session.flush()
         return data
 
-    def deleteOne(self, schema, id: str):
+    def deleteOne(self, schema: DeclarativeBase, id: str):
         return self.session.delete(schema(id = id))
