@@ -36,8 +36,8 @@ class MySQLDatabase(DatabaseABC):
         
         if query.selected_fields:
             cursor = cursor.add_columns(select(query.selected_fields))
-        if query.where:
-            cursor = cursor.where(text(query.where))
+        if query.filter_by:
+            cursor = cursor.where(text(query.filter_by))
         if query.group_by:
             cursor = cursor.group_by(text(query.group_by))
         if query.having:

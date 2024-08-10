@@ -8,4 +8,4 @@ class SQLQueryParam(BaseModel):
     group_by: Optional[str] = None
     having: Optional[str] = None
     selected_fields: list[str] = []
-    where: str = None
+    filter_by: str = None
