@@ -10,6 +10,10 @@ class DatabaseABC(ABC):
     def disconnect(self):
         pass
 
+    @abstractmethod
+    def create_metadata(self):
+        pass
+
     @staticmethod
     @abstractmethod
     def get_instance() -> "DatabaseABC":

@@ -4,10 +4,19 @@ from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
-class DatabaseService(Generic(T)):
+class DatabaseService(Generic[T]):
     def __init__(self, schema, Service: DatabaseABC = MySQLDatabase):
         self.service = Service.get_instance()
         self.schema = schema
+    
+    def connect(self):
+        self.service.connect()
+    
+    def disconnect(self):
+        self.service.disconnect()
+    
+    def create_metadata(self):
+        self.service.create_metadata()
     
     def getOne(self, id: str) -> T:
         return self.service.getOneById(self.schema, id)

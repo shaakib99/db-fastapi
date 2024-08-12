@@ -9,18 +9,21 @@ import os
 class MySQLDatabase(DatabaseABC):
     instance = None
     def __init__(self):
-        self.engine = create_engine(os.getenv("DB_CONNECTION_URL", "mysql://test"))
+        self.engine = create_engine(os.getenv('DB_CONNECTION_URL', 'mysql://test'))
         self.session: Session = sessionmaker(bind=self.engine, autoflush=False, autocommit = False)()
         self.base = declarative_base()
-        self.base.metadata.create_all()
+        self.base.metadata.create_all(self.engine)
 
     def connect(self):
         self.engine.connect()
 
     def disconnect(self):
         self.engine.dispose(close=True)
+    
+    def create_metadata(self):
+        self.base.metadata.create_all(self.engine)
 
-    def get_instance() -> "DatabaseABC":
+    def get_instance() -> 'MySQLDatabase':
         if MySQLDatabase.instance is None:
             MySQLDatabase.instance = MySQLDatabase()
         return MySQLDatabase.instance
@@ -51,11 +54,17 @@ class MySQLDatabase(DatabaseABC):
         return cursor.all()
 
     def saveOne(self, schema: DeclarativeBase, data: BaseModel):
-        data = schema(**BaseModel)
-        self.session.add(data)
+        data_model = schema(**data)
+        self.session.add(data_model)
         self.session.commit()
         self.session.flush()
-        return data
+        return data_model
+    
+    def updateOne(self, schema: DeclarativeBase, id: str, data: dict ):
+        data_model = schema(**data)
+        self.session.commit()
+        self.session.flush()
+        return data_model
 
     def deleteOne(self, schema: DeclarativeBase, id: str):
         return self.session.delete(schema(id = id))
