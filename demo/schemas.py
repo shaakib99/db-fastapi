@@ -22,8 +22,8 @@ class DemoLicense(Base):
     __tablename__ = 'licenses'
 
     id = Column(Integer, autoincrement=True, nullable=False, primary_key=True, unique=True)
-    license_nummber = Column(String(20), unique=True, nullable=False)
-    user_id = Column(Integer, ForeignKey(DemoUser.id))
+    license_number = Column(String(20), unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey(DemoUser.id), nullable=False)
     is_active = Column(Boolean, default=True)
 
-    user = relationship('DemoUser', back_populates='licenses', foreign_keys='DemoLicense.user_id')
+    user = relationship(DemoUser)

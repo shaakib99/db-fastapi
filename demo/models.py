@@ -8,16 +8,38 @@ class QueryParams(BaseModel):
 class DemoUserModel(BaseModel):
     id: Optional[int] = None
     name: str = Field(..., min_length=2, max_length=40)
-    email: str = Field(..., max_length=40, min_length=5, pattern='/^[a-zA-Z0-9. _-]+@[a-zA-Z0-9. -]+\. [a-zA-Z]{2,4}$/')
+    email: str = Field(..., max_length=40, min_length=5)
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 class DemoLicenseModel(BaseModel):
     id: Optional[int] = None
     license_number: str = Field(..., max_length=15)
-    isActive: bool = True
-    user: DemoUserModel
+    is_active: bool = Field(..., default_factory=lambda : True)
+    user_id: int = Field(...)
 
     class Config:
         from_attributes = True
+        orm_mode = True
+
+
+# Response Model
+class DemoResponseUserModel(BaseModel):
+    id: Optional[int] = None
+    name: str = Field(..., min_length=2, max_length=40)
+    email: str = Field(..., max_length=40, min_length=5)
+    licenses: list[DemoLicenseModel] = []
+    class Config:
+        from_attributes = True
+        orm_mode = True
+
+class DemoResponseLicenseModel(BaseModel):
+    id: Optional[int] = None
+    license_number: str = Field(..., max_length=15)
+    is_active: bool = Field(..., default_factory=lambda : True)
+    user: Optional[DemoUserModel] = Field(...)
+    class Config:
+        from_attributes = True
+        orm_mode = True

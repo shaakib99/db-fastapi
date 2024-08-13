@@ -3,7 +3,6 @@ from database.models.query_param_model import SQLQueryParam
 from sqlalchemy import create_engine,text, select
 from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
 from sqlalchemy.ext.declarative import declarative_base
-from pydantic import BaseModel
 import os
 
 class MySQLDatabase(DatabaseABC):
@@ -53,18 +52,31 @@ class MySQLDatabase(DatabaseABC):
 
         return cursor.all()
 
-    def saveOne(self, schema: DeclarativeBase, data: BaseModel):
-        data_model = schema(**data)
-        self.session.add(data_model)
-        self.session.commit()
-        self.session.flush()
-        return data_model
+    def saveOne(self, schema: DeclarativeBase, data: dict):
+        try:
+            data_model = schema(**data)
+            self.session.add(data_model)
+            self.session.commit()
+            return data_model
+        except Exception as e:
+            self.session.rollback()
+            self.session.reset()
+            raise Exception(str(e))
     
-    def updateOne(self, schema: DeclarativeBase, id: str, data: dict ):
-        data_model = schema(**data)
-        self.session.commit()
-        self.session.flush()
-        return data_model
+    def updateOne(self, schema: DeclarativeBase, id: str, data: dict):
+        try:
+            data_model = schema(**data)
+            self.session.commit()
+            return data_model
+        except Exception as e:
+            self.session.rollback()
+            self.session.reset()
+            raise Exception(str(e))
 
     def deleteOne(self, schema: DeclarativeBase, id: str):
-        return self.session.delete(schema(id = id))
+        try:
+            return self.session.delete(schema(id = id))
+        except Exception as e:
+            self.session.rollback()
+            self.session.reset()
+            raise Exception(str(e))
