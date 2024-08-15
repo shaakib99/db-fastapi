@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends
 from demo.service import DemoService
-from demo.models import QueryParams, DemoUserModel, DemoLicenseModel, DemoResponseLicenseModel, DemoResponseUserModel
+from database.models.query_param_model import SQLQueryParam
+from demo.models import DemoUserModel, DemoUpdateUserModel, DemoLicenseModel, DemoResponseLicenseModel, DemoResponseUserModel
 from typing import Annotated
 
 router = APIRouter(prefix="/demo")
 
-@router.get("")
-async def getAll(query: Annotated[QueryParams, Depends(QueryParams)]):
+@router.get("", response_model=list[DemoResponseUserModel], response_model_exclude_unset=True)
+async def getAll(query: Annotated[SQLQueryParam, Depends(SQLQueryParam)]):
     demo_service = DemoService()
     return await demo_service.getAll(query)
 
@@ -14,6 +15,11 @@ async def getAll(query: Annotated[QueryParams, Depends(QueryParams)]):
 async def getOne(id: int):
     demo_service = DemoService()
     return await demo_service.getOne(id)
+
+@router.patch('/{id}', response_model=DemoResponseUserModel)
+async def updateOne(id: int, data: DemoUpdateUserModel):
+    demo_service = DemoService()
+    return await demo_service.updateOne(id, data)
 
 @router.post("", response_model=DemoUserModel)
 async def saveOne(data: DemoUserModel):

@@ -1,7 +1,7 @@
 from database.lib.db_abc import DatabaseABC
 from database.models.query_param_model import SQLQueryParam
-from sqlalchemy import create_engine,text, select
-from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
+from sqlalchemy import create_engine,text
+from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase, joinedload
 from sqlalchemy.ext.declarative import declarative_base
 import os
 
@@ -35,9 +35,14 @@ class MySQLDatabase(DatabaseABC):
 
     def getAll(self, schema: DeclarativeBase, query: SQLQueryParam):
         cursor = self.session.query(schema)
-        
         if query.selected_fields:
-            cursor = cursor.add_columns(select(query.selected_fields))
+            columns = [getattr(schema, field) for field in query.selected_fields]
+            cursor = cursor.add_columns(*columns)
+
+        for field in query.join:
+            relationship_attr = getattr(schema, field)
+            cursor = cursor.options(joinedload(relationship_attr))
+
         if query.filter_by:
             cursor = cursor.where(text(query.filter_by))
         if query.group_by:
@@ -46,11 +51,10 @@ class MySQLDatabase(DatabaseABC):
             cursor = cursor.having(text(query.having))
         if query.order_by:
             cursor = cursor.order_by(text(query.order_by))
-
+        
         cursor = cursor.limit(query.limit)
         cursor = cursor.offset(query.skip)
-
-        return cursor.all()
+        return [res[0] for res in cursor.all()]
 
     def saveOne(self, schema: DeclarativeBase, data: dict):
         try:
@@ -65,7 +69,11 @@ class MySQLDatabase(DatabaseABC):
     
     def updateOne(self, schema: DeclarativeBase, id: str, data: dict):
         try:
-            data_model = schema(**data)
+            data_model = self.getOneById(schema, id)
+            for key, value in data.items():
+                if value is None: 
+                    continue
+                setattr(data_model, key, value)
             self.session.commit()
             return data_model
         except Exception as e:

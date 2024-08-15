@@ -18,7 +18,7 @@ class DatabaseService(Generic[T]):
     def create_metadata(self):
         self.service.create_metadata()
     
-    def getOne(self, id: str) -> T:
+    def getOne(self, id: int) -> T:
         return self.service.getOneById(self.schema, id)
 
     def getAll(self, query) -> list[T]:

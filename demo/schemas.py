@@ -14,6 +14,9 @@ class DemoUser(Base):
     
     @validates('email')
     def validate_email(self, key, address):
+        if not address:
+            return
+
         if "@" not in address:
             raise ValueError("Not a valid email")
         return address
@@ -26,4 +29,4 @@ class DemoLicense(Base):
     user_id = Column(Integer, ForeignKey(DemoUser.id), nullable=False)
     is_active = Column(Boolean, default=True)
 
-    user = relationship(DemoUser)
+    user = relationship(DemoUser, back_populates='licenses')
