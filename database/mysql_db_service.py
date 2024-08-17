@@ -39,31 +39,36 @@ class MySQLDatabase(DatabaseABC):
         
 
     def getAll(self, schema: DeclarativeBase, query: SQLQueryParam):
-        cursor = self.session.query(schema)
-        if query.selected_fields:
-            columns = [getattr(schema, field) for field in query.selected_fields]
-            cursor = cursor.options(load_only(*columns))
+        try:
+            cursor = self.session.query(schema)
+            if query.selected_fields:
+                columns = [getattr(schema, field) for field in query.selected_fields]
+                cursor = cursor.options(load_only(*columns))
 
-        for field in query.join:
-            relationship_attr = getattr(schema, field)
-            cursor = cursor.options(joinedload(relationship_attr))
+            for field in query.join:
+                relationship_attr = getattr(schema, field)
+                cursor = cursor.options(joinedload(relationship_attr))
 
-        if query.filter_by:
-            cursor = cursor.where(text(query.filter_by))
-        if query.group_by:
-            cursor = cursor.group_by(text(query.group_by))
-        if query.having:
-            cursor = cursor.having(text(query.having))
-        if query.order_by:
-            cursor = cursor.order_by(text(query.order_by))
-        
-        cursor = cursor.limit(query.limit)
-        cursor = cursor.offset(query.skip)
+            if query.filter_by:
+                cursor = cursor.where(text(query.filter_by))
+            if query.group_by:
+                cursor = cursor.group_by(text(query.group_by))
+            if query.having:
+                cursor = cursor.having(text(query.having))
+            if query.order_by:
+                cursor = cursor.order_by(text(query.order_by))
+            
+            cursor = cursor.limit(query.limit)
+            cursor = cursor.offset(query.skip)
 
-        if len(query.selected_fields):
-            return [res.__dict__ for res in cursor.all()]
+            if len(query.selected_fields):
+                return [res.__dict__ for res in cursor.all()]
 
-        return cursor.all()
+            return cursor.all()
+        except Exception as e:
+            self.session.rollback()
+            self.session.reset()
+            raise Exception(str(e))
 
     def saveOne(self, schema: DeclarativeBase, data: dict):
         try:
