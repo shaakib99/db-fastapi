@@ -14,6 +14,10 @@ class DatabaseABC(ABC):
     def create_metadata(self):
         pass
 
+    @abstractmethod
+    def drop_metadata(self):
+        pass
+
     @staticmethod
     @abstractmethod
     def get_instance() -> "DatabaseABC":
