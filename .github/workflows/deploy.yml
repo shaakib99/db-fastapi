@@ -1,0 +1,29 @@
+name: Deploy
+
+on:
+    push:
+        branches: ["main"]
+permissions: 
+    contents: read
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v4
+
+        - name: Install Docker and Make
+          run: apt-get update && apt-get install docker make
+        
+        - name: Build and Push to dockerhub
+          run: make push_to_docker_hub
+          env:
+            DOCKER_HUB_USERNAME: ${{secrets.DOCKER_HUB_USERNAME}}
+            DOCKER_HUB_PASSWORD: ${{secrets.DOCKER_HUB_PASSWORD}}
+            DB_CONNECTION_URL: ${{secrets.PROD_DB_CONNECTION_URL}}
+            REMOTE_DOCKER_HUB_REPO: ${{secrets.REMOTE_DOCKER_HUB_REPO}}
+        
+        - name: Deploy
+          run: echo "deploy"
+
+
