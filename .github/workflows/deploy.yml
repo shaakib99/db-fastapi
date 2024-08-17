@@ -24,6 +24,10 @@ jobs:
             REMOTE_DOCKER_HUB_REPO: ${{secrets.REMOTE_DOCKER_HUB_REPO}}
         
         - name: Deploy
-          run: echo "deploy"
+          run: make deploy_to_render
+          env:
+            RENDER_SERVICE_ID: ${{secrets.RENDER_SERVICE_ID}}
+            RENDER_API_KEY: ${{secrets.RENDER_API_KEY}}
+
 
 
