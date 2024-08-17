@@ -1,7 +1,7 @@
 from database.lib.db_abc import DatabaseABC
 from database.models.query_param_model import SQLQueryParam
 from sqlalchemy import create_engine,text
-from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase, joinedload
+from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase, joinedload, load_only
 from sqlalchemy.ext.declarative import declarative_base
 import os
 
@@ -37,7 +37,7 @@ class MySQLDatabase(DatabaseABC):
         cursor = self.session.query(schema)
         if query.selected_fields:
             columns = [getattr(schema, field) for field in query.selected_fields]
-            cursor = cursor.add_columns(*columns)
+            cursor = cursor.options(load_only(*columns))
 
         for field in query.join:
             relationship_attr = getattr(schema, field)
@@ -54,7 +54,11 @@ class MySQLDatabase(DatabaseABC):
         
         cursor = cursor.limit(query.limit)
         cursor = cursor.offset(query.skip)
-        return [res[0] for res in cursor.all()]
+
+        if len(query.selected_fields):
+            return [res.__dict__ for res in cursor.all()]
+
+        return cursor.all()
 
     def saveOne(self, schema: DeclarativeBase, data: dict):
         try:
