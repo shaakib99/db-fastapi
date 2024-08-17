@@ -13,7 +13,6 @@ class DemoService:
 
     async def getOne(self, id: int):
         data = self.user_service.getOne(id)
-        print(data.email, data.name)
         if data is None:
             raise HTTPException(status_code=404, detail=f"{id=} not found")
         return data
