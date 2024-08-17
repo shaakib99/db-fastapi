@@ -87,12 +87,4 @@ def test_get_all(database, user_data):
     result = database.getAll(DemoUser, SQLQueryParam(selected_fields = ['id'], join = ['licenses']))
     result = DemoResponseUserModel.model_validate(result[1])
 
-
-    # result = DemoResponseUserModel.model_validate(result[1])
     assert len(getattr(result, 'licenses')) == 0, "licenses field should return when joining"
-
-
-
-
-
-
