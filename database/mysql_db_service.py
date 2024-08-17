@@ -21,6 +21,11 @@ class MySQLDatabase(DatabaseABC):
     
     def create_metadata(self):
         self.base.metadata.create_all(self.engine)
+    
+    def drop_metadata(self):
+        self.session.close()
+        self.engine.dispose()
+        self.base.metadata.drop_all(self.engine)
 
     def get_instance() -> 'MySQLDatabase':
         if MySQLDatabase.instance is None:
@@ -87,7 +92,9 @@ class MySQLDatabase(DatabaseABC):
 
     def deleteOne(self, schema: DeclarativeBase, id: str):
         try:
-            return self.session.delete(schema(id = id))
+            user_model = self.getOneById(schema, id)
+            self.session.delete(user_model)
+            self.session.commit()
         except Exception as e:
             self.session.rollback()
             self.session.reset()

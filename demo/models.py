@@ -39,6 +39,7 @@ class DemoResponseUserModel(BaseModel):
     email: Optional[str] = Field(max_length=40, min_length=5, default=None)
     licenses: Optional[list[DemoLicenseModel]] = None
     class Config:
+        from_attributes = True
         orm_mode = True
 
 class DemoResponseLicenseModel(BaseModel):
